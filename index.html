@@ -1,65 +1,1621 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ГеоКадастр — Геодезические и кадастровые работы</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-      html, body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        background-color: #ffffff;
-        color: #1a2744;
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ГеоКадастр — Геодезические и кадастровые работы</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      if (window.self === window.top) return;
+      var reported = {};
+      window.addEventListener("error", function (event) {
+        if (!event || !event.message) return;
+        var key = event.message + "|" + (event.filename || "") + "|" + (event.lineno || 0);
+        if (reported[key]) return;
+        reported[key] = true;
+        try {
+          window.parent.postMessage({
+            type: "sandbox-runtime-error",
+            payload: {
+              message: String(event.message).slice(0, 500),
+              filename: event.filename || "",
+              lineno: event.lineno || 0,
+              colno: event.colno || 0,
+              stack: event.error && event.error.stack ? String(event.error.stack).slice(0, 2000) : ""
+            }
+          }, "*");
+        } catch (e) {}
+      });
+    })();
+  </script>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: #1a2744;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: #fff;
+      line-height: 1.6;
+    }
+    a { text-decoration: none; color: inherit; }
+    ul { list-style: none; }
+    img { max-width: 100%; display: block; }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; }
+    input, select, textarea { font-family: inherit; font-size: inherit; }
+
+    /* ===== VARIABLES ===== */
+    :root {
+      --primary: #1a2744;
+      --primary-light: #2a3f6b;
+      --accent: #e8722a;
+      --accent-hover: #d4631f;
+      --bg-light: #f8f9fb;
+      --bg-section: #f0f3f7;
+      --text-dark: #1a2744;
+      --text-gray: #5a6577;
+      --border: #e2e6ed;
+      --max-width: 1200px;
+    }
+
+    /* ===== UTILITIES ===== */
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 1rem; }
+    @media (min-width: 640px) { .container { padding: 0 1.5rem; } }
+    @media (min-width: 1024px) { .container { padding: 0 2rem; } }
+
+    .section { padding: 5rem 0; }
+    @media (min-width: 1024px) { .section { padding: 7rem 0; } }
+    .section-white { background: #fff; }
+    .section-gray { background: var(--bg-section); }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 3.5rem;
+    }
+    .section-title h2 {
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+    .section-title p {
+      font-size: 1.125rem;
+      color: var(--text-gray);
+      max-width: 40rem;
+      margin: 0 auto;
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+    .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+    .animate-slide-down { animation: slideDown 0.3s ease-out forwards; }
+
+    .scroll-animate {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+    .scroll-animate.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ===== GRID PATTERN ===== */
+    .grid-pattern {
+      background-image:
+        linear-gradient(rgba(26, 39, 68, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26, 39, 68, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 0.875rem 1.75rem;
+      border-radius: 0.5rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .btn-accent {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-accent:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 10px 30px rgba(232, 114, 42, 0.25);
+    }
+    .btn-outline {
+      border: 2px solid var(--primary);
+      color: var(--primary);
+    }
+    .btn-outline:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      transition: all 0.3s ease;
+      background: transparent;
+    }
+    .header.scrolled {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+    }
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 4rem;
+    }
+    @media (min-width: 1024px) { .header-inner { height: 5rem; } }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .logo-icon {
+      width: 2.25rem;
+      height: 2.25rem;
+      background: var(--accent);
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-icon svg { width: 1.25rem; height: 1.25rem; color: #fff; }
+    .logo-text { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+    .logo-text span { color: var(--accent); }
+
+    .nav-desktop {
+      display: none;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    @media (min-width: 1024px) { .nav-desktop { display: flex; } }
+    .nav-desktop a {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-gray);
+      transition: color 0.3s;
+    }
+    .nav-desktop a:hover { color: var(--accent); }
+
+    .header-right {
+      display: none;
+      align-items: center;
+      gap: 1rem;
+    }
+    @media (min-width: 1024px) { .header-right { display: flex; } }
+    .header-phone {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--primary);
+      transition: color 0.3s;
+    }
+    .header-phone:hover { color: var(--accent); }
+
+    .burger {
+      display: flex;
+      padding: 0.5rem;
+      color: var(--primary);
+    }
+    @media (min-width: 1024px) { .burger { display: none; } }
+    .burger svg { width: 1.5rem; height: 1.5rem; }
+
+    /* Mobile menu */
+    .mobile-menu {
+      display: none;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      animation: slideDown 0.3s ease-out;
+    }
+    .mobile-menu.open { display: block; }
+    @media (min-width: 1024px) { .mobile-menu { display: none !important; } }
+    .mobile-menu-inner { padding: 1rem; }
+    .mobile-menu-inner a {
+      display: block;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-gray);
+      padding: 0.5rem 0;
+      transition: color 0.3s;
+    }
+    .mobile-menu-inner a:hover { color: var(--accent); }
+    .mobile-menu-bottom {
+      padding-top: 0.75rem;
+      margin-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+    .mobile-menu-bottom .btn { width: 100%; margin-top: 0.75rem; }
+
+    /* ===== HERO ===== */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 5rem;
+      background: linear-gradient(135deg, var(--bg-light), #fff, var(--bg-section));
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-grid {
+      display: grid;
+      gap: 3rem;
+      align-items: center;
+    }
+    @media (min-width: 1024px) {
+      .hero-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .hero h1 {
+      font-size: clamp(1.875rem, 5vw, 3.4rem);
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero-subtitle {
+      font-size: 1.125rem;
+      color: var(--text-gray);
+      margin-bottom: 2rem;
+      max-width: 36rem;
+      line-height: 1.7;
+    }
+    .hero-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+    .hero-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    .hero-feature {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .hero-feature svg {
+      width: 1.25rem;
+      height: 1.25rem;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .hero-feature span {
+      font-size: 0.875rem;
+      color: var(--text-gray);
+      font-weight: 500;
+    }
+
+    /* Hero illustration */
+    .hero-illustration {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+    @media (min-width: 1024px) { .hero-illustration { display: flex; } }
+    .hero-illustration-inner {
+      position: relative;
+      width: 22rem;
+      height: 22rem;
+    }
+    @media (min-width: 1280px) {
+      .hero-illustration-inner { width: 24rem; height: 24rem; }
+    }
+    .hero-circle { position: absolute; border-radius: 50%; }
+    .hero-circle-1 { inset: 0; border: 2px solid rgba(26,39,68,0.1); }
+    .hero-circle-2 { inset: 1rem; border: 1px solid rgba(232,114,42,0.2); }
+    .hero-circle-3 { inset: 2rem; border: 1px solid rgba(26,39,68,0.1); }
+    .hero-crosshair-h { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(26,39,68,0.1); }
+    .hero-crosshair-v { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(26,39,68,0.1); }
+    .hero-center-dot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 1rem;
+      height: 1rem;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 4px 15px rgba(232,114,42,0.3);
+    }
+    .hero-dot {
+      position: absolute;
+      width: 0.75rem;
+      height: 0.75rem;
+      background: rgba(26,39,68,0.4);
+      border-radius: 50%;
+    }
+    .hero-dot-1 { top: 20%; left: 30%; }
+    .hero-dot-2 { top: 35%; right: 20%; }
+    .hero-dot-3 { bottom: 25%; left: 25%; }
+    .hero-dot-4 { bottom: 35%; right: 30%; }
+    .hero-label {
+      position: absolute;
+      font-size: 0.75rem;
+      color: rgba(90,101,119,0.6);
+      font-family: monospace;
+    }
+    .hero-label-1 { top: 15%; left: 15%; }
+    .hero-label-2 { bottom: 15%; right: 15%; }
+
+    /* Decorative */
+    .hero-deco-1 { position: absolute; top: 5rem; right: 2.5rem; width: 16rem; height: 16rem; border: 1px solid rgba(226,230,237,0.5); border-radius: 50%; opacity: 0.3; }
+    .hero-deco-2 { position: absolute; bottom: 5rem; left: 2.5rem; width: 10rem; height: 10rem; border: 1px solid rgba(232,114,42,0.2); border-radius: 50%; }
+
+    /* ===== SERVICES ===== */
+    .services-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    @media (min-width: 640px) { .services-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .services-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    .service-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+    .service-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(26, 39, 68, 0.1);
+      border-color: rgba(232,114,42,0.3);
+    }
+    .service-card-icon {
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    .service-card-icon svg { width: 2.5rem; height: 2.5rem; }
+    .service-card h3 {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    .service-card p {
+      font-size: 0.875rem;
+      color: var(--text-gray);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+    .service-card-link {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--accent);
+      transition: color 0.3s;
+    }
+    .service-card-link:hover { color: var(--accent-hover); }
+    .service-card-link svg { width: 1rem; height: 1rem; margin-left: 0.25rem; }
+
+    /* ===== ADVANTAGES ===== */
+    .advantages-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    @media (min-width: 640px) { .advantages-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .advantages-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    .advantage-card {
+      background: #fff;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      transition: box-shadow 0.3s;
+    }
+    .advantage-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    .advantage-card .emoji { font-size: 1.875rem; margin-bottom: 1rem; }
+    .advantage-card h3 { font-size: 1.125rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem; }
+    .advantage-card p { font-size: 0.875rem; color: var(--text-gray); line-height: 1.6; }
+
+    /* ===== STAGES / TIMELINE ===== */
+    .timeline { max-width: 56rem; margin: 0 auto; position: relative; }
+    .timeline-line {
+      display: none;
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent), var(--primary-light));
+      transform: translateX(-50%);
+    }
+    @media (min-width: 768px) { .timeline-line { display: block; } }
+
+    .timeline-item {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    @media (min-width: 768px) {
+      .timeline-item {
+        flex-direction: row;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 3rem;
       }
-    </style>
-    <script>
-      (function () {
-        document.documentElement.classList.add("light");
-        document.documentElement.setAttribute("data-theme", "light");
-      })();
-    </script>
-      <script>
-      (function () {
-        if (window.self === window.top) return;
-        var reported = {};
-        window.addEventListener("error", function (event) {
-          // 资源加载失败的 error 事件没有 message，此处仅上报 JS 运行时错误
-          if (!event || !event.message) return;
-          var key =
-            event.message + "|" + (event.filename || "") + "|" + (event.lineno || 0);
-          if (reported[key]) return; // 相同错误只上报一次，避免渲染循环刷屏
-          reported[key] = true;
-          try {
-            window.parent.postMessage(
-              {
-                type: "sandbox-runtime-error",
-                payload: {
-                  message: String(event.message).slice(0, 500),
-                  filename: event.filename || "",
-                  lineno: event.lineno || 0,
-                  colno: event.colno || 0,
-                  stack:
-                    event.error && event.error.stack
-                      ? String(event.error.stack).slice(0, 2000)
-                      : ""
-                }
-              },
-              "*"
-            );
-          } catch (e) {
-            /* 上报失败不影响页面运行 */
-          }
-        });
-      })();
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+      .timeline-item.reverse { flex-direction: row-reverse; }
+    }
+
+    .timeline-content {
+      flex: 1;
+      padding-left: 3.5rem;
+    }
+    @media (min-width: 768px) {
+      .timeline-content { padding-left: 0; }
+      .timeline-item:not(.reverse) .timeline-content { text-align: right; }
+    }
+    .timeline-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .timeline-num { font-size: 0.875rem; font-weight: 700; color: var(--accent); }
+    .timeline-card h3 { font-size: 1.125rem; font-weight: 700; color: var(--primary); margin: 0.25rem 0 0.5rem; }
+    .timeline-card p { font-size: 0.875rem; color: var(--text-gray); }
+
+    .timeline-dot {
+      position: absolute;
+      left: 1rem;
+      top: 0;
+      width: 2.5rem;
+      height: 2.5rem;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.875rem;
+      box-shadow: 0 4px 15px rgba(232,114,42,0.2);
+      z-index: 2;
+    }
+    @media (min-width: 768px) {
+      .timeline-dot {
+        left: 50%;
+        transform: translateX(-50%);
+      }
+    }
+
+    .timeline-spacer { flex: 1; display: none; }
+    @media (min-width: 768px) { .timeline-spacer { display: block; } }
+
+    /* ===== CLIENTS ===== */
+    .clients-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    @media (min-width: 640px) { .clients-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .clients-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    .client-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      transition: border-color 0.3s;
+    }
+    .client-card:hover { border-color: rgba(232,114,42,0.3); }
+    .client-card .emoji { font-size: 1.875rem; margin-bottom: 0.75rem; }
+    .client-card h3 { font-size: 1.125rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem; }
+    .client-card p { font-size: 0.875rem; color: var(--text-gray); line-height: 1.6; }
+
+    /* ===== PRICING ===== */
+    .pricing-table {
+      max-width: 48rem;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .pricing-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem;
+      transition: background 0.3s;
+    }
+    .pricing-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+    .pricing-row:hover { background: rgba(248,249,251,0.5); }
+    .pricing-row .name { font-weight: 500; color: var(--primary); }
+    .pricing-row .price { font-weight: 700; color: var(--accent); white-space: nowrap; margin-left: 1rem; }
+    .pricing-note {
+      text-align: center;
+      color: var(--text-gray);
+      font-size: 0.875rem;
+      margin-top: 1.5rem;
+      max-width: 36rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .pricing-cta { text-align: center; margin-top: 2rem; }
+
+    /* ===== FORM ===== */
+    .form-wrapper { max-width: 36rem; margin: 0 auto; }
+    .form-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    @media (min-width: 640px) { .form-card { padding: 2rem; } }
+
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--primary);
+      margin-bottom: 0.375rem;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      color: var(--text-dark);
+      transition: border-color 0.3s, box-shadow 0.3s;
+      outline: none;
+      background: #fff;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(232,114,42,0.15);
+    }
+    .form-group textarea { resize: none; }
+    .form-group .error-input { border-color: #ef4444; }
+    .form-group .error-text { color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem; }
+
+    .form-submit {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.875rem;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      font-size: 1rem;
+      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .form-submit:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 10px 30px rgba(232,114,42,0.25);
+    }
+    .form-disclaimer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-gray);
+      margin-top: 0.75rem;
+    }
+
+    .form-success {
+      text-align: center;
+      padding: 2rem 0;
+      animation: fadeIn 0.5s ease-out;
+    }
+    .form-success-icon {
+      width: 4rem;
+      height: 4rem;
+      background: #dcfce7;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+    }
+    .form-success-icon svg { width: 2rem; height: 2rem; color: #16a34a; }
+    .form-success h3 { font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem; }
+    .form-success p { color: var(--text-gray); }
+
+    /* ===== REVIEWS ===== */
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    @media (min-width: 768px) { .reviews-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    .review-card {
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+    }
+    .review-stars { display: flex; gap: 0.25rem; margin-bottom: 1rem; }
+    .review-stars svg { width: 1.25rem; height: 1.25rem; color: #facc15; }
+    .review-text {
+      font-size: 0.875rem;
+      color: var(--text-gray);
+      line-height: 1.7;
+      font-style: italic;
+      margin-bottom: 1rem;
+    }
+    .review-author {
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+    }
+    .review-author .name { font-weight: 600; font-size: 0.875rem; color: var(--primary); }
+    .review-author .type { font-size: 0.75rem; color: var(--text-gray); }
+
+    /* ===== CONTACTS ===== */
+    .contacts-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      max-width: 64rem;
+      margin: 0 auto;
+    }
+    @media (min-width: 768px) { .contacts-grid { grid-template-columns: 1fr 1fr; } }
+
+    .contact-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .contact-card + .contact-card { margin-top: 1.5rem; }
+    .contact-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      background: rgba(232,114,42,0.1);
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .contact-icon svg { width: 1.25rem; height: 1.25rem; color: var(--accent); }
+    .contact-label { font-weight: 600; color: var(--primary); margin-bottom: 0.25rem; }
+    .contact-value { color: var(--text-gray); font-size: 0.875rem; }
+    .contact-value a { transition: color 0.3s; }
+    .contact-value a:hover { color: var(--accent); }
+
+    .contacts-right .map-wrapper {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    .contacts-right . выезд-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .call-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+    }
+    .call-btn svg { width: 1.25rem; height: 1.25rem; }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      background: var(--primary);
+      color: #fff;
+      padding: 3rem 0;
+    }
+    @media (min-width: 1024px) { .footer { padding: 4rem 0; } }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      margin-bottom: 2.5rem;
+    }
+    @media (min-width: 640px) { .footer-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .footer-grid { grid-template-columns: 2fr 1fr 1fr 1fr; } }
+
+    .footer-logo { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+    .footer-logo .logo-icon { width: 2rem; height: 2rem; }
+    .footer-logo .logo-icon svg { width: 1rem; height: 1rem; }
+    .footer-logo span { font-size: 1.125rem; font-weight: 700; }
+    .footer-desc { color: rgba(255,255,255,0.6); font-size: 0.875rem; line-height: 1.6; }
+
+    .footer h4 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 1rem;
+    }
+    .footer ul li { margin-bottom: 0.5rem; }
+    .footer ul li a,
+    .footer ul li span {
+      color: rgba(255,255,255,0.6);
+      font-size: 0.875rem;
+      transition: color 0.3s;
+    }
+    .footer ul li a:hover { color: var(--accent); }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    @media (min-width: 640px) {
+      .footer-bottom { flex-direction: row; justify-content: space-between; }
+    }
+    .footer-bottom p,
+    .footer-bottom a {
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.4);
+      transition: color 0.3s;
+    }
+    .footer-bottom a:hover { color: var(--accent); }
+
+    /* ===== SCROLL TO TOP ===== */
+    .scroll-top {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      width: 3rem;
+      height: 3rem;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(232,114,42,0.3);
+      z-index: 90;
+      transition: all 0.3s;
+      animation: fadeIn 0.3s ease-out;
+    }
+    .scroll-top:hover { transform: scale(1.1); background: var(--accent-hover); }
+    .scroll-top.show { display: flex; }
+    .scroll-top svg { width: 1.25rem; height: 1.25rem; }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #b0b8c8; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #8a95a8; }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="header" id="header">
+    <div class="container">
+      <div class="header-inner">
+        <a href="#" class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>
+            </svg>
+          </div>
+          <div class="logo-text">Гео<span>Кадастр</span></div>
+        </a>
+
+        <nav class="nav-desktop">
+          <a href="#services">Услуги</a>
+          <a href="#advantages">Преимущества</a>
+          <a href="#stages">Этапы работы</a>
+          <a href="#pricing">Цены</a>
+          <a href="#reviews">Отзывы</a>
+          <a href="#contacts">Контакты</a>
+        </nav>
+
+        <div class="header-right">
+          <a href="tel:+79000000000" class="header-phone">+7 (900) 000-00-00</a>
+          <a href="#form" class="btn btn-accent" style="padding:0.625rem 1.25rem; font-size:0.875rem;">Оставить заявку</a>
+        </div>
+
+        <button class="burger" id="burgerBtn" aria-label="Меню">
+          <svg id="burgerIcon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">
+      <div class="container">
+        <div class="mobile-menu-inner">
+          <a href="#services" class="mobile-link">Услуги</a>
+          <a href="#advantages" class="mobile-link">Преимущества</a>
+          <a href="#stages" class="mobile-link">Этапы работы</a>
+          <a href="#pricing" class="mobile-link">Цены</a>
+          <a href="#reviews" class="mobile-link">Отзывы</a>
+          <a href="#contacts" class="mobile-link">Контакты</a>
+          <div class="mobile-menu-bottom">
+            <a href="tel:+79000000000" style="font-weight:600; color:var(--primary);">+7 (900) 000-00-00</a>
+            <a href="#form" class="btn btn-accent mobile-link">Оставить заявку</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero grid-pattern">
+    <div class="hero-deco-1"></div>
+    <div class="hero-deco-2"></div>
+
+    <div class="container">
+      <div class="hero-grid">
+        <div class="animate-fade-in-up">
+          <h1>Геодезические и кадастровые работы <span>под ключ</span></h1>
+          <p class="hero-subtitle">Топографическая съемка, межевание, вынос границ, технические планы и сопровождение строительства. Работаем с частными лицами, застройщиками и организациями.</p>
+          <div class="hero-buttons">
+            <a href="#form" class="btn btn-accent">Получить консультацию</a>
+            <a href="#services" class="btn btn-outline">Смотреть услуги</a>
+          </div>
+          <div class="hero-features">
+            <div class="hero-feature">
+              <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              <span>Работаем по нормативам</span>
+            </div>
+            <div class="hero-feature">
+              <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              <span>Современное оборудование</span>
+            </div>
+            <div class="hero-feature">
+              <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              <span>Аттестованные инженеры</span>
+            </div>
+            <div class="hero-feature">
+              <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              <span>Соблюдаем сроки</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-illustration">
+          <div class="hero-illustration-inner">
+            <div class="hero-circle hero-circle-1"></div>
+            <div class="hero-circle hero-circle-2"></div>
+            <div class="hero-circle hero-circle-3"></div>
+            <div class="hero-crosshair-h"></div>
+            <div class="hero-crosshair-v"></div>
+            <div class="hero-center-dot"></div>
+            <div class="hero-dot hero-dot-1"></div>
+            <div class="hero-dot hero-dot-2"></div>
+            <div class="hero-dot hero-dot-3"></div>
+            <div class="hero-dot hero-dot-4"></div>
+            <svg style="position:absolute;inset:0;width:100%;height:100%;" viewBox="0 0 400 400">
+              <line x1="120" y1="80" x2="200" y2="200" stroke="rgba(26,39,68,0.1)" stroke-width="1"/>
+              <line x1="320" y1="140" x2="200" y2="200" stroke="rgba(26,39,68,0.1)" stroke-width="1"/>
+              <line x1="100" y1="300" x2="200" y2="200" stroke="rgba(26,39,68,0.1)" stroke-width="1"/>
+              <line x1="280" y1="260" x2="200" y2="200" stroke="rgba(26,39,68,0.1)" stroke-width="1"/>
+            </svg>
+            <div class="hero-label hero-label-1">N 55°45'</div>
+            <div class="hero-label hero-label-2">E 37°37'</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SERVICES ===== -->
+  <section id="services" class="section section-white">
+    <div class="container">
+      <div class="section-title scroll-animate">
+        <h2>Наши услуги</h2>
+        <p>Полный комплекс геодезических и кадастровых работ для любых задач</p>
+      </div>
+      <div class="services-grid">
+
+        <div class="service-card scroll-animate">
+          <div class="service-card-icon">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="40" height="40" rx="4"/><path d="M4 28 L16 20 L28 26 L44 14"/><circle cx="16" cy="20" r="2" fill="currentColor"/><circle cx="28" cy="26" r="2" fill="currentColor"/><circle cx="44" cy="14" r="2" fill="currentColor"/></svg>
+          </div>
+          <h3>Топографическая съемка</h3>
+          <p>Подготовка топографических планов для проектирования, строительства, согласований и подключения коммуникаций.</p>
+          <a href="#form" class="service-card-link">Подробнее <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></a>
+        </div>
+
+        <div class="service-card scroll-animate">
+          <div class="service-card-icon">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 40 L8 16 L24 8 L40 16 L40 40"/><path d="M8 40 L40 40"/><path d="M24 8 L24 40" stroke-dasharray="4 2"/><circle cx="8" cy="16" r="3" fill="currentColor"/><circle cx="24" cy="8" r="3" fill="currentColor"/><circle cx="40" cy="16" r="3" fill="currentColor"/></svg>
+          </div>
+          <h3>Межевание земельных участков</h3>
+          <p>Уточнение границ, площади и координат земельного участка для регистрации и кадастрового учета.</p>
+          <a href="#form" class="service-card-link">Подробнее <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></a>
+        </div>
+
+        <div class="service-card scroll-animate">
+          <div class="service-card-icon">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 8 L40 8 L40 40 L8 40 Z"/><circle cx="8" cy="8" r="3" fill="currentColor"/><circle cx="40" cy="8" r="3" fill="currentColor"/><circle cx="40" cy="40" r="3" fill="currentColor"/><circle cx="8" cy="40" r="3" fill="currentColor"/><path d="M4 4 L12 12 M44 4 L36 12 M4 44 L12 36 M44 44 L36 36" stroke-width="1.5"/></svg>
+          </div>
+          <h3>Вынос границ участка в натуру</h3>
+          <p>Определение и закрепление поворотных точек границ земельного участка на местности.</p>
+          <a href="#form" class="service-card-link">Подробнее <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></a>
+        </div>
+
+        <div class="service-card scroll-animate">
+          <div class="service-card-icon">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><path d="M24 4 L24 44" stroke-dasharray="4 2"/><path d="M4 24 L44 24" stroke-dasharray="4 2"/><rect x="12" y="12" width="24" height="24" rx="2"/><circle cx="24" cy="24" r="4" fill="currentColor"/></svg>
+          </div>
+          <h3>Вынос осей зданий и сооружений</h3>
+          <p>Перенос проектных осей объекта строительства на местность с высокой точностью.</p>
+          <a href="#form" class="service-card-link">Подробнее <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></a>
+        </div>
+
+        <div class="service-card scroll-animate">
+          <div class="service-card-icon">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="4" width="32" height="40" rx="3"/><path d="M14 14 L34 14"/><path d="M14 22 L34 22"/><path d="M14 30 L26 30"/><path d="M30 28 L36 34 L30 34" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <h3>Исполнительная съемка</h3>
+          <p>Проверка соответствия построенных объектов проектной документации.</p>
+          <a href="#form" class="service-card-link">Подробнее <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></a>
+        </div>
+
+        <div class="service-card scroll-animate">
+          <div class="service-card-icon">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="36" height="36" rx="3"/><path d="M6 18 L42 18"/><path d="M18 18 L18 42"/><rect x="22" y="22" width="12" height="8"/><path d="M10 24 L14 24 M10 30 L14 30 M10 36 L14 36" stroke-width="1.5"/></svg>
+          </div>
+          <h3>Технические планы</h3>
+          <p>Подготовка технических планов зданий, сооружений и помещений для постановки на кадастровый учет.</p>
+          <a href="#form" class="service-card-link">Подробнее <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></a>
+        </div>
+
+        <div class="service-card scroll-animate">
+          <div class="service-card-icon">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><rect x="10" y="4" width="28" height="40" rx="3"/><path d="M16 14 L32 14"/><path d="M16 20 L32 20"/><path d="M16 26 L28 26"/><path d="M20 34 L28 34" stroke-width="3"/></svg>
+          </div>
+          <h3>Акты обследования</h3>
+          <p>Подготовка документов для снятия с кадастрового учета разрушенных или снесенных объектов.</p>
+          <a href="#form" class="service-card-link">Подробнее <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></a>
+        </div>
+
+        <div class="service-card scroll-animate">
+          <div class="service-card-icon">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 44 L8 20 L24 8 L40 20 L40 44"/><rect x="18" y="30" width="12" height="14"/><path d="M4 44 L44 44"/><circle cx="24" cy="18" r="3"/></svg>
+          </div>
+          <h3>Геодезическое сопровождение строительства</h3>
+          <p>Контроль точности строительно-монтажных работ на всех этапах строительства.</p>
+          <a href="#form" class="service-card-link">Подробнее <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></a>
+        </div>
+
+        <div class="service-card scroll-animate">
+          <div class="service-card-icon">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="24" cy="24" r="18"/><path d="M18 20 C18 16, 30 16, 30 20 C30 24, 24 24, 24 28"/><circle cx="24" cy="34" r="1.5" fill="currentColor"/></svg>
+          </div>
+          <h3>Кадастровые консультации</h3>
+          <p>Помощь по вопросам границ земельных участков, кадастрового учета и оформления недвижимости.</p>
+          <a href="#form" class="service-card-link">Подробнее <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ADVANTAGES ===== -->
+  <section id="advantages" class="section section-gray">
+    <div class="container">
+      <div class="section-title scroll-animate">
+        <h2>Почему выбирают нас</h2>
+        <p>Мы обеспечиваем качество, точность и надежность на каждом этапе</p>
+      </div>
+      <div class="advantages-grid">
+        <div class="advantage-card scroll-animate">
+          <div class="emoji">🔬</div>
+          <h3>Современное оборудование</h3>
+          <p>Используем электронные тахеометры, спутниковое оборудование и точные измерительные системы.</p>
+        </div>
+        <div class="advantage-card scroll-animate">
+          <div class="emoji">👷</div>
+          <h3>Квалифицированные специалисты</h3>
+          <p>Работы выполняют геодезисты и кадастровые инженеры с практическим опытом.</p>
+        </div>
+        <div class="advantage-card scroll-animate">
+          <div class="emoji">⏱️</div>
+          <h3>Соблюдение сроков</h3>
+          <p>Фиксируем сроки в договоре и предупреждаем о ходе выполнения работ.</p>
+        </div>
+        <div class="advantage-card scroll-animate">
+          <div class="emoji">📋</div>
+          <h3>Официальные документы</h3>
+          <p>Готовим документы в соответствии с требованиями законодательства и кадастрового учета.</p>
+        </div>
+        <div class="advantage-card scroll-animate">
+          <div class="emoji">💰</div>
+          <h3>Понятная стоимость</h3>
+          <p>Озвучиваем цену до начала работ и объясняем, что входит в стоимость.</p>
+        </div>
+        <div class="advantage-card scroll-animate">
+          <div class="emoji">🤝</div>
+          <h3>Работа с частными и юрлицами</h3>
+          <p>Выполняем как разовые задачи для собственников, так и комплексное сопровождение проектов.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== STAGES ===== -->
+  <section id="stages" class="section section-white">
+    <div class="container">
+      <div class="section-title scroll-animate">
+        <h2>Как мы работаем</h2>
+        <p>Прозрачный и понятный процесс от заявки до результата</p>
+      </div>
+      <div class="timeline">
+        <div class="timeline-line"></div>
+
+        <div class="timeline-item scroll-animate">
+          <div class="timeline-content">
+            <div class="timeline-card">
+              <span class="timeline-num">01</span>
+              <h3>Заявка и консультация</h3>
+              <p>Клиент оставляет заявку, мы уточняем задачу, объект и цели работ.</p>
+            </div>
+          </div>
+          <div class="timeline-dot">01</div>
+          <div class="timeline-spacer"></div>
+        </div>
+
+        <div class="timeline-item reverse scroll-animate">
+          <div class="timeline-content">
+            <div class="timeline-card">
+              <span class="timeline-num">02</span>
+              <h3>Анализ документов</h3>
+              <p>Изучаем имеющиеся документы, выписки, планы и исходные данные.</p>
+            </div>
+          </div>
+          <div class="timeline-dot">02</div>
+          <div class="timeline-spacer"></div>
+        </div>
+
+        <div class="timeline-item scroll-animate">
+          <div class="timeline-content">
+            <div class="timeline-card">
+              <span class="timeline-num">03</span>
+              <h3>Коммерческое предложение</h3>
+              <p>Формируем стоимость, сроки и перечень работ.</p>
+            </div>
+          </div>
+          <div class="timeline-dot">03</div>
+          <div class="timeline-spacer"></div>
+        </div>
+
+        <div class="timeline-item reverse scroll-animate">
+          <div class="timeline-content">
+            <div class="timeline-card">
+              <span class="timeline-num">04</span>
+              <h3>Полевые работы</h3>
+              <p>Выезжаем на объект и выполняем измерения.</p>
+            </div>
+          </div>
+          <div class="timeline-dot">04</div>
+          <div class="timeline-spacer"></div>
+        </div>
+
+        <div class="timeline-item scroll-animate">
+          <div class="timeline-content">
+            <div class="timeline-card">
+              <span class="timeline-num">05</span>
+              <h3>Камеральная обработка</h3>
+              <p>Обрабатываем полученные данные, готовим схемы, планы и документы.</p>
+            </div>
+          </div>
+          <div class="timeline-dot">05</div>
+          <div class="timeline-spacer"></div>
+        </div>
+
+        <div class="timeline-item reverse scroll-animate">
+          <div class="timeline-content">
+            <div class="timeline-card">
+              <span class="timeline-num">06</span>
+              <h3>Передача результата</h3>
+              <p>Передаем клиенту готовые документы и при необходимости консультируем.</p>
+            </div>
+          </div>
+          <div class="timeline-dot">06</div>
+          <div class="timeline-spacer"></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CLIENTS ===== -->
+  <section class="section section-gray">
+    <div class="container">
+      <div class="section-title scroll-animate">
+        <h2>Кому мы помогаем</h2>
+        <p>Работаем с различными категориями клиентов и решаем задачи любой сложности</p>
+      </div>
+      <div class="clients-grid">
+        <div class="client-card scroll-animate">
+          <div class="emoji">🏠</div>
+          <h3>Частные домовладельцы</h3>
+          <p>Оформление границ, межевание, технические планы для домов и участков.</p>
+        </div>
+        <div class="client-card scroll-animate">
+          <div class="emoji">🌍</div>
+          <h3>Владельцы земельных участков</h3>
+          <p>Уточнение границ, вынос в натуру, подготовка межевых планов.</p>
+        </div>
+        <div class="client-card scroll-animate">
+          <div class="emoji">🏗️</div>
+          <h3>Застройщики</h3>
+          <p>Топосъемка, исполнительная съемка, геодезическое сопровождение.</p>
+        </div>
+        <div class="client-card scroll-animate">
+          <div class="emoji">🔧</div>
+          <h3>Подрядные организации</h3>
+          <p>Контроль точности СМР, вынос осей, исполнительная документация.</p>
+        </div>
+        <div class="client-card scroll-animate">
+          <div class="emoji">📐</div>
+          <h3>Архитекторы и проектировщики</h3>
+          <p>Топографические планы, инженерные изыскания для проектирования.</p>
+        </div>
+        <div class="client-card scroll-animate">
+          <div class="emoji">🏭</div>
+          <h3>Промышленные предприятия</h3>
+          <p>Комплексные геодезические работы, мониторинг деформаций.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PRICING ===== -->
+  <section id="pricing" class="section section-white">
+    <div class="container">
+      <div class="section-title scroll-animate">
+        <h2>Стоимость работ</h2>
+        <p>Ориентировочные цены на основные виды работ</p>
+      </div>
+      <div class="scroll-animate">
+        <div class="pricing-table">
+          <div class="pricing-row">
+            <span class="name">Топографическая съемка</span>
+            <span class="price">от 8 000 ₽</span>
+          </div>
+          <div class="pricing-row">
+            <span class="name">Вынос границ участка</span>
+            <span class="price">от 6 000 ₽</span>
+          </div>
+          <div class="pricing-row">
+            <span class="name">Межевание земельного участка</span>
+            <span class="price">от 10 000 ₽</span>
+          </div>
+          <div class="pricing-row">
+            <span class="name">Технический план</span>
+            <span class="price">от 12 000 ₽</span>
+          </div>
+          <div class="pricing-row">
+            <span class="name">Исполнительная съемка</span>
+            <span class="price">по договоренности</span>
+          </div>
+          <div class="pricing-row">
+            <span class="name">Геодезическое сопровождение строительства</span>
+            <span class="price">по запросу</span>
+          </div>
+        </div>
+        <p class="pricing-note">Точная стоимость зависит от площади участка, удаленности объекта, сложности работ и исходных документов.</p>
+        <div class="pricing-cta">
+          <a href="#form" class="btn btn-accent">Рассчитать стоимость</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FORM ===== -->
+  <section id="form" class="section section-gray">
+    <div class="container">
+      <div class="form-wrapper">
+        <div class="section-title scroll-animate">
+          <h2>Оставить заявку</h2>
+          <p>Заполните форму, и мы свяжемся с вами для уточнения деталей</p>
+        </div>
+        <div class="form-card scroll-animate">
+          <div id="formContent">
+            <form id="contactForm" novalidate>
+              <div class="form-group">
+                <label for="formName">Ваше имя *</label>
+                <input type="text" id="formName" name="name" placeholder="Иван Иванов">
+                <div class="error-text" id="nameError" style="display:none;">Пожалуйста, укажите ваше имя</div>
+              </div>
+              <div class="form-group">
+                <label for="formPhone">Телефон *</label>
+                <input type="tel" id="formPhone" name="phone" placeholder="+7 (___) ___-__-__">
+                <div class="error-text" id="phoneError" style="display:none;">Пожалуйста, укажите номер телефона</div>
+              </div>
+              <div class="form-group">
+                <label for="formService">Тип услуги</label>
+                <select id="formService" name="service">
+                  <option value="">Выберите услугу</option>
+                  <option value="topo">Топографическая съемка</option>
+                  <option value="mezhev">Межевание</option>
+                  <option value="borders">Вынос границ</option>
+                  <option value="techplan">Технический план</option>
+                  <option value="executive">Исполнительная съемка</option>
+                  <option value="construction">Геодезическое сопровождение</option>
+                  <option value="other">Другое</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="formComment">Комментарий</label>
+                <textarea id="formComment" name="comment" rows="3" placeholder="Опишите вашу задачу..."></textarea>
+              </div>
+              <button type="submit" class="form-submit">Отправить заявку</button>
+              <p class="form-disclaimer">Нажимая кнопку, вы соглашаетесь на обработку персональных данных.</p>
+            </form>
+          </div>
+          <div id="formSuccess" class="form-success" style="display:none;">
+            <div class="form-success-icon">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <h3>Спасибо!</h3>
+            <p>Ваша заявка принята. Мы свяжемся с вами в ближайшее время.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== REVIEWS ===== -->
+  <section id="reviews" class="section section-white">
+    <div class="container">
+      <div class="section-title scroll-animate">
+        <h2>Отзывы клиентов</h2>
+        <p>Что говорят о нас наши клиенты</p>
+      </div>
+      <div class="reviews-grid">
+        <div class="review-card scroll-animate">
+          <div class="review-stars">
+            <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          </div>
+          <p class="review-text">«Заказывали вынос границ земельного участка. Специалисты приехали вовремя, быстро установили точки и объяснили все понятным языком. Очень довольны.»</p>
+          <div class="review-author">
+            <p class="name">Алексей Петров</p>
+            <p class="type">Вынос границ</p>
+          </div>
+        </div>
+
+        <div class="review-card scroll-animate">
+          <div class="review-stars">
+            <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          </div>
+          <p class="review-text">«Нужна была топографическая съемка для подключения газа. Работу выполнили аккуратно и в срок. Отдельное спасибо за консультацию по документам.»</p>
+          <div class="review-author">
+            <p class="name">Мария Иванова</p>
+            <p class="type">Топографическая съемка</p>
+          </div>
+        </div>
+
+        <div class="review-card scroll-animate">
+          <div class="review-stars">
+            <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          </div>
+          <p class="review-text">«Сотрудничаем с компанией по геодезическому сопровождению объекта. Все измерения выполняются точно, документы передаются вовремя.»</p>
+          <div class="review-author">
+            <p class="name">ООО «СтройПроект»</p>
+            <p class="type">Геодезическое сопровождение</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CONTACTS ===== -->
+  <section id="contacts" class="section section-gray">
+    <div class="container">
+      <div class="section-title scroll-animate">
+        <h2>Контакты</h2>
+        <p>Свяжитесь с нами удобным способом</p>
+      </div>
+      <div class="contacts-grid">
+        <div class="contacts-left scroll-animate">
+          <div class="contact-card">
+            <div class="contact-icon">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+            </div>
+            <div>
+              <p class="contact-label">Телефон</p>
+              <p class="contact-value"><a href="tel:+79000000000">+7 (900) 000-00-00</a></p>
+            </div>
+          </div>
+          <div class="contact-card" style="margin-top:1.5rem;">
+            <div class="contact-icon">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <div>
+              <p class="contact-label">Email</p>
+              <p class="contact-value"><a href="mailto:info@geokadastr.ru">info@geokadastr.ru</a></p>
+            </div>
+          </div>
+          <div class="contact-card" style="margin-top:1.5rem;">
+            <div class="contact-icon">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <div>
+              <p class="contact-label">Адрес</p>
+              <p class="contact-value">г. Пятигорск</p>
+            </div>
+          </div>
+          <div class="contact-card" style="margin-top:1.5rem;">
+            <div class="contact-icon">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+              <p class="contact-label">Режим работы</p>
+              <p class="contact-value">Пн–Пт, 9:00–18:00</p>
+            </div>
+          </div>
+          <a href="tel:+79000000000" class="btn btn-accent call-btn">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+            Позвонить
+          </a>
+        </div>
+
+        <div class="contacts-right scroll-animate">
+          <div class="map-wrapper">
+            <div style="position:relative;overflow:hidden;">
+              <a href="https://yandex.ru/maps/11067/pyatigorsk/?utm_medium=mapframe&utm_source=maps" style="color:#eee;font-size:12px;position:absolute;top:0px;">Пятигорск</a>
+              <a href="https://yandex.ru/maps/11067/pyatigorsk/?ll=43.070339%2C44.038266&mode=routes&rtext=~44.038331%2C43.070140&rtt=auto&ruri=~ymapsbm1%3A%2F%2Fgeo%3Fdata%3DCgoxNTIzMDkyOTYzEnfQoNC-0YHRgdC40Y8sINCh0YLQsNCy0YDQvtC_0L7Qu9GM0YHQutC40Lkg0LrRgNCw0LksINCf0Y_RgtC40LPQvtGA0YHQuiwg0KPQvdC40LLQtdGA0YHQuNGC0LXRgtGB0LrQsNGPINGD0LvQuNGG0LAsIDTQkCIKDdJHLEIVQCcwQg%2C%2C&utm_medium=mapframe&utm_source=maps&z=20.8" style="color:#eee;font-size:12px;position:absolute;top:14px;">Яндекс Карты</a>
+              <iframe src="https://yandex.ru/map-widget/v1/?ll=43.070339%2C44.038266&mode=routes&rtext=~44.038331%2C43.070140&rtt=auto&ruri=~ymapsbm1%3A%2F%2Fgeo%3Fdata%3DCgoxNTIzMDkyOTYzEnfQoNC-0YHRgdC40Y8sINCh0YLQsNCy0YDQvtC_0L7Qu9GM0YHQutC40Lkg0LrRgNCw0LksINCf0Y_RgtC40LPQvtGA0YHQuiwg0KPQvdC40LLQtdGA0YHQuNGC0LXRgtGB0LrQsNGPINGD0LvQuNGG0LAsIDTQkCIKDdJHLEIVQCcwQg%2C%2C&z=20.8" width="560" height="400" frameborder="1" allowfullscreen="true" style="position:relative;width:100%;height:400px;"></iframe>
+            </div>
+          </div>
+          <div class="contact-card">
+            <div class="contact-icon">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+            </div>
+            <div>
+              <p class="contact-label">Выезд специалиста на объект</p>
+              <p class="contact-value">Выезжаем на объекты в город и область. Возможен срочный выезд по согласованию.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-logo">
+            <div class="logo-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+            </div>
+            <span>Гео<span style="color:var(--accent)">Кадастр</span></span>
+          </div>
+          <p class="footer-desc">Геодезические и кадастровые работы любой сложности. Работаем с частными лицами, застройщиками и организациями.</p>
+        </div>
+        <div>
+          <h4>Навигация</h4>
+          <ul>
+            <li><a href="#services">Услуги</a></li>
+            <li><a href="#advantages">Преимущества</a></li>
+            <li><a href="#stages">Этапы работы</a></li>
+            <li><a href="#pricing">Цены</a></li>
+            <li><a href="#reviews">Отзывы</a></li>
+            <li><a href="#contacts">Контакты</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Услуги</h4>
+          <ul>
+            <li><span>Топографическая съемка</span></li>
+            <li><span>Межевание участков</span></li>
+            <li><span>Вынос границ</span></li>
+            <li><span>Технические планы</span></li>
+            <li><span>Исполнительная съемка</span></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Контакты</h4>
+          <ul>
+            <li><a href="tel:+79000000000">+7 (900) 000-00-00</a></li>
+            <li><a href="mailto:info@geokadastr.ru">info@geokadastr.ru</a></li>
+            <li><span>г. Пятигорск</span></li>
+            <li><span>Пн–Пт, 9:00–18:00</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 ГеоКадастр. Все права защищены.</p>
+        <a href="#">Политика конфиденциальности</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== SCROLL TO TOP ===== -->
+  <button class="scroll-top" id="scrollTopBtn" aria-label="Наверх">
+    <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>
+  </button>
+
+  <!-- ===== SCRIPTS ===== -->
+  <script>
+    // === Header scroll effect ===
+    const header = document.getElementById('header');
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+      if (window.scrollY > 500) {
+        scrollTopBtn.classList.add('show');
+      } else {
+        scrollTopBtn.classList.remove('show');
+      }
+    });
+
+    // === Scroll to top ===
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // === Mobile menu ===
+    const burgerBtn = document.getElementById('burgerBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const burgerIcon = document.getElementById('burgerIcon');
+    let menuOpen = false;
+
+    burgerBtn.addEventListener('click', () => {
+      menuOpen = !menuOpen;
+      if (menuOpen) {
+        mobileMenu.classList.add('open');
+        burgerIcon.innerHTML = '<path d="M6 18L18 6M6 6l12 12"/>';
+      } else {
+        mobileMenu.classList.remove('open');
+        burgerIcon.innerHTML = '<path d="M4 6h16M4 12h16M4 18h16"/>';
+      }
+    });
+
+    // Close mobile menu on link click
+    document.querySelectorAll('.mobile-link').forEach(link => {
+      link.addEventListener('click', () => {
+        menuOpen = false;
+        mobileMenu.classList.remove('open');
+        burgerIcon.innerHTML = '<path d="M4 6h16M4 12h16M4 18h16"/>';
+      });
+    });
+
+    // === Scroll animations (Intersection Observer) ===
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.scroll-animate').forEach(el => {
+      observer.observe(el);
+    });
+
+    // === Form validation ===
+    const form = document.getElementById('contactForm');
+    const formContent = document.getElementById('formContent');
+    const formSuccess = document.getElementById('formSuccess');
+    const nameInput = document.getElementById('formName');
+    const phoneInput = document.getElementById('formPhone');
+    const nameError = document.getElementById('nameError');
+    const phoneError = document.getElementById('phoneError');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      let hasError = false;
+
+      if (!nameInput.value.trim()) {
+        nameInput.classList.add('error-input');
+        nameError.style.display = 'block';
+        hasError = true;
+      } else {
+        nameInput.classList.remove('error-input');
+        nameError.style.display = 'none';
+      }
+
+      if (!phoneInput.value.trim()) {
+        phoneInput.classList.add('error-input');
+        phoneError.style.display = 'block';
+        hasError = true;
+      } else {
+        phoneInput.classList.remove('error-input');
+        phoneError.style.display = 'none';
+      }
+
+      if (!hasError) {
+        formContent.style.display = 'none';
+        formSuccess.style.display = 'block';
+        setTimeout(() => {
+          formContent.style.display = 'block';
+          formSuccess.style.display = 'none';
+          form.reset();
+        }, 5000);
+      }
+    });
+
+    // Clear errors on input
+    nameInput.addEventListener('input', () => {
+      nameInput.classList.remove('error-input');
+      nameError.style.display = 'none';
+    });
+    phoneInput.addEventListener('input', () => {
+      phoneInput.classList.remove('error-input');
+      phoneError.style.display = 'none';
+    });
+  </script>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
 </html>
