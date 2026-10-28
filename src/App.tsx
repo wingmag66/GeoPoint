@@ -702,14 +702,10 @@ export default function App() {
             {/* Map placeholder + выезд */}
             <div className="scroll-animate space-y-6">
               <div className="bg-white rounded-xl border border-border overflow-hidden">
-                <div className="bg-bg-light h-64 flex items-center justify-center">
-                  <div className="text-center">
-                    <svg className="w-12 h-12 text-text-gray/30 mx-auto mb-3" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                      <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <p className="text-text-gray text-sm">Здесь будет карта проезда</p>
-                  </div>
+                <div style={{position:'relative', overflow:'hidden'}}>
+                  <a href="https://yandex.ru/maps/11067/pyatigorsk/?utm_medium=mapframe&utm_source=maps" style={{color:'#eee', fontSize:'12px', position:'absolute', top:'0px'}}>Пятигорск</a>
+                  <a href="https://yandex.ru/maps/11067/pyatigorsk/?ll=43.070339%2C44.038266&mode=routes&rtext=~44.038331%2C43.070140&rtt=auto&ruri=~ymapsbm1%3A%2F%2Fgeo%3Fdata%3DCgoxNTIzMDkyOTYzEnfQoNC-0YHRgdC40Y8sINCh0YLQsNCy0YDQvtC_0L7Qu9GM0YHQutC40Lkg0LrRgNCw0LksINCf0Y_RgtC40LPQvtGA0YHQuiwg0KPQvdC40LLQtdGA0YHQuNGC0LXRgtGB0LrQsNGPINGD0LvQuNGG0LAsIDTQkCIKDdJHLEIVQCcwQg%2C%2C&utm_medium=mapframe&utm_source=maps&z=20.8" style={{color:'#eee', fontSize:'12px', position:'absolute', top:'14px'}}>Яндекс Карты</a>
+                  <iframe src="https://yandex.ru/map-widget/v1/?ll=43.070339%2C44.038266&mode=routes&rtext=~44.038331%2C43.070140&rtt=auto&ruri=~ymapsbm1%3A%2F%2Fgeo%3Fdata%3DCgoxNTIzMDkyOTYzEnfQoNC-0YHRgdC40Y8sINCh0YLQsNCy0YDQvtC_0L7Qu9GM0YHQutC40Lkg0LrRgNCw0LksINCf0Y_RgtC40LPQvtGA0YHQuiwg0KPQvdC40LLQtdGA0YHQuNGC0LXRgtGB0LrQsNGPINGD0LvQuNGG0LAsIDTQkCIKDdJHLEIVQCcwQg%2C%2C&z=20.8" width="560" height="400" frameBorder="1" allowFullScreen={true} style={{position:'relative', width:'100%', height:'400px'}}></iframe>
                 </div>
               </div>
               <div className="bg-white rounded-xl p-6 border border-border">
